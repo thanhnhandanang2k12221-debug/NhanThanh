@@ -573,18 +573,37 @@ volumeIcon.addEventListener('click', () => {
     }
 });
 
-function playRandomSong() {
-            const randomIndex = Math.floor(Math.random() * songs.length);
-            const randomSong = songs[randomIndex];
-            const audio = document.getElementById('audioPlayer');
-            audio.src = randomSong;
-            audio.play();
-        }
+async function playRandomSong() {
+    const randomIndex = Math.floor(Math.random() * songs.length);
+
+    currentSongIndex = randomIndex;
+    audioPlayer.src = songs[randomIndex];
+
+    try {
+        await audioPlayer.play();
+        playPauseButton.textContent = "⏸";
+    } catch (e) {
+        console.log("Autoplay bị trình duyệt chặn.");
+        throw e;
+    }
+}
 
 window.onload = () => {
-    playRandomSong();
     volumeSlider.value = 0.5;
     audioPlayer.volume = 0.5;
+
+    // thử autoplay
+    playRandomSong().catch(() => {
+        // nếu bị chặn thì chờ người dùng click lần đầu
+        const startMusic = () => {
+            playRandomSong();
+            document.removeEventListener("click", startMusic);
+            document.removeEventListener("touchstart", startMusic);
+        };
+
+        document.addEventListener("click", startMusic);
+        document.addEventListener("touchstart", startMusic);
+    });
 };
 
         function updateClock() {
